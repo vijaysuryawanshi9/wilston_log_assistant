@@ -1,0 +1,212 @@
+[
+  {
+    "incident_id": "INC-1001",
+    "title": "PostgreSQL connection pool exhaustion during peak batch load",
+    "component_affected": "postgresql-primary",
+    "error_signature": "FATAL: remaining connection slots are reserved / too many clients already",
+    "root_cause": "Application connection pool max size was set higher than the database max_connections limit, causing pool saturation during nightly batch jobs.",
+    "resolution_steps": [
+      "Lowered application-side pool max size below db max_connections minus reserved superuser slots",
+      "Enabled PgBouncer in transaction pooling mode",
+      "Added alerting on active connection count > 80% of max_connections"
+    ],
+    "severity": "HIGH",
+    "tags": ["database", "postgresql", "connection-pool", "batch-job"]
+  },
+  {
+    "incident_id": "INC-1002",
+    "title": "PLC Modbus TCP communication timeout on line 3",
+    "component_affected": "plc-line3-controller",
+    "error_signature": "Modbus TCP read timeout after 3 retries / no response from slave device",
+    "root_cause": "Intermittent network switch port flapping on the OT VLAN caused packet loss between the SCADA gateway and PLC.",
+    "resolution_steps": [
+      "Replaced faulty SFP module on the affected switch port",
+      "Reduced Modbus polling interval and added exponential backoff",
+      "Added redundant network path for OT VLAN"
+    ],
+    "severity": "HIGH",
+    "tags": ["plc", "modbus", "network", "timeout", "ot"]
+  },
+  {
+    "incident_id": "INC-1003",
+    "title": "Docker container OOMKilled during image processing spike",
+    "component_affected": "vision-inspection-service",
+    "error_signature": "OOMKilled / container exited with code 137",
+    "root_cause": "Memory limit set too low for peak workload; a burst of high-resolution images caused memory usage to exceed the container cgroup limit.",
+    "resolution_steps": [
+      "Increased container memory limit and requests",
+      "Implemented image downsampling before processing",
+      "Added horizontal pod autoscaling based on memory pressure"
+    ],
+    "severity": "MEDIUM",
+    "tags": ["docker", "oom", "memory", "vision", "container"]
+  },
+  {
+    "incident_id": "INC-1004",
+    "title": "Cascading failure from database outage to dependent microservices",
+    "component_affected": "order-processing-service",
+    "error_signature": "ConnectionRefusedError / circuit breaker OPEN state",
+    "root_cause": "Primary database failover took longer than the service timeout, causing upstream services without circuit breakers to queue requests and exhaust thread pools.",
+    "resolution_steps": [
+      "Implemented circuit breaker pattern with fast-fail on downstream unavailability",
+      "Added read replicas with automatic failover under 10 seconds",
+      "Introduced request queuing with backpressure"
+    ],
+    "severity": "CRITICAL",
+    "tags": ["cascading-failure", "database", "microservices", "circuit-breaker"]
+  },
+  {
+    "incident_id": "INC-1005",
+    "title": "Repeated NullReferenceException in batch scheduler after config change",
+    "component_affected": "batch-scheduler-app",
+    "error_signature": "NullReferenceException at ScheduleRunner.Execute",
+    "root_cause": "A configuration migration removed a default value for a job parameter, and the code did not null-check before dereferencing it.",
+    "resolution_steps": [
+      "Added null-check and default fallback in ScheduleRunner",
+      "Restored missing configuration default",
+      "Added schema validation for configuration files at startup"
+    ],
+    "severity": "MEDIUM",
+    "tags": ["application", "exception", "configuration", "scheduler"]
+  },
+  {
+    "incident_id": "INC-1006",
+    "title": "PLC sensor drift causing false-positive safety interlocks",
+    "component_affected": "plc-safety-interlock-line1",
+    "error_signature": "Safety interlock triggered / sensor value out of calibrated range",
+    "root_cause": "Temperature sensor drifted out of calibration after 6 months of continuous operation, tripping safety thresholds under normal conditions.",
+    "resolution_steps": [
+      "Recalibrated affected sensors",
+      "Implemented scheduled calibration reminders",
+      "Added sensor health diagnostics to the PLC dashboard"
+    ],
+    "severity": "HIGH",
+    "tags": ["plc", "sensor", "safety", "calibration"]
+  },
+  {
+    "incident_id": "INC-1007",
+    "title": "Disk space exhaustion on log volume causing application crash",
+    "component_affected": "app-server-02",
+    "error_signature": "No space left on device / write failed to /var/log",
+    "root_cause": "Log rotation policy was misconfigured, allowing debug-level logs to accumulate unbounded over several weeks.",
+    "resolution_steps": [
+      "Fixed logrotate configuration with size and time-based rotation",
+      "Reduced default log level from DEBUG to INFO in production",
+      "Added disk usage alerting at 80% threshold"
+    ],
+    "severity": "HIGH",
+    "tags": ["infrastructure", "disk", "logging", "crash"]
+  },
+  {
+    "incident_id": "INC-1008",
+    "title": "Docker daemon unresponsive due to orphaned container buildup",
+    "component_affected": "docker-host-04",
+    "error_signature": "Error response from daemon: dial unix docker.sock: connect: resource temporarily unavailable",
+    "root_cause": "Failed deployment retries created hundreds of orphaned stopped containers, exhausting the daemon's internal state handling capacity.",
+    "resolution_steps": [
+      "Pruned orphaned containers and dangling images",
+      "Fixed deployment script to clean up failed containers before retrying",
+      "Added scheduled docker system prune job"
+    ],
+    "severity": "MEDIUM",
+    "tags": ["docker", "daemon", "infrastructure", "deployment"]
+  },
+  {
+    "incident_id": "INC-1009",
+    "title": "PostgreSQL deadlock storm during concurrent inventory updates",
+    "component_affected": "inventory-db",
+    "error_signature": "deadlock detected / process holds lock and waits for another",
+    "root_cause": "Two stored procedures updated the same rows in inventory and order tables in opposite lock order under high concurrency.",
+    "resolution_steps": [
+      "Standardized lock acquisition order across stored procedures",
+      "Reduced transaction scope and added retry-on-deadlock logic",
+      "Added deadlock monitoring and alerting"
+    ],
+    "severity": "HIGH",
+    "tags": ["database", "postgresql", "deadlock", "concurrency"]
+  },
+  {
+    "incident_id": "INC-1010",
+    "title": "PLC-to-MES data desync after network partition",
+    "component_affected": "mes-integration-gateway",
+    "error_signature": "Stale data warning / last sync timestamp exceeded threshold",
+    "root_cause": "A brief network partition between the PLC gateway and MES caused queued messages to be dropped instead of buffered, resulting in state desynchronization.",
+    "resolution_steps": [
+      "Implemented persistent message queue (buffering) for PLC-MES sync",
+      "Added reconciliation job to detect and correct desynced state",
+      "Added network partition detection with automatic resync trigger"
+    ],
+    "severity": "HIGH",
+    "tags": ["plc", "mes", "network", "data-sync"]
+  },
+  {
+    "incident_id": "INC-1011",
+    "title": "Memory leak in application service leading to gradual degradation",
+    "component_affected": "reporting-service",
+    "error_signature": "GC overhead limit exceeded / gradually increasing response latency",
+    "root_cause": "An event listener was registered but never unregistered on each request, causing unbounded growth of subscriber lists over time.",
+    "resolution_steps": [
+      "Fixed listener lifecycle to unregister on request completion",
+      "Added memory profiling to CI pipeline",
+      "Set up automatic restart policy as a temporary mitigation"
+    ],
+    "severity": "MEDIUM",
+    "tags": ["application", "memory-leak", "performance"]
+  },
+  {
+    "incident_id": "INC-1012",
+    "title": "Container image pull failure due to registry authentication expiry",
+    "component_affected": "ci-cd-deployment-pipeline",
+    "error_signature": "ImagePullBackOff / unauthorized: authentication required",
+    "root_cause": "Registry service account credentials expired and were not rotated automatically, blocking new container deployments.",
+    "resolution_steps": [
+      "Rotated and renewed registry credentials",
+      "Automated credential rotation with secrets manager integration",
+      "Added pre-deployment authentication health check"
+    ],
+    "severity": "MEDIUM",
+    "tags": ["docker", "ci-cd", "registry", "authentication"]
+  },
+  {
+    "incident_id": "INC-1013",
+    "title": "PLC firmware bug causing intermittent watchdog resets",
+    "component_affected": "plc-line2-controller",
+    "error_signature": "Watchdog reset triggered / unexpected controller reboot",
+    "root_cause": "A known firmware bug in a specific PLC firmware version caused the watchdog timer to trigger under specific I/O load patterns.",
+    "resolution_steps": [
+      "Applied vendor firmware patch",
+      "Added reboot event logging and alerting",
+      "Scheduled firmware audit across all line controllers"
+    ],
+    "severity": "HIGH",
+    "tags": ["plc", "firmware", "watchdog", "reboot"]
+  },
+  {
+    "incident_id": "INC-1014",
+    "title": "Slow PostgreSQL queries after missing index post-migration",
+    "component_affected": "analytics-db",
+    "error_signature": "Query execution time > 30s / sequential scan on large table",
+    "root_cause": "A schema migration dropped an index that was not recreated, causing the query planner to fall back to full table scans on a growing table.",
+    "resolution_steps": [
+      "Recreated the missing index",
+      "Added migration checklist requiring index verification",
+      "Enabled slow query logging with automated review"
+    ],
+    "severity": "MEDIUM",
+    "tags": ["database", "postgresql", "performance", "migration"]
+  },
+  {
+    "incident_id": "INC-1015",
+    "title": "Multi-service outage triggered by expired TLS certificate",
+    "component_affected": "api-gateway",
+    "error_signature": "SSL handshake failed / certificate has expired",
+    "root_cause": "The TLS certificate renewal automation silently failed weeks earlier without alerting, and the certificate expired during business hours.",
+    "resolution_steps": [
+      "Manually renewed and deployed the certificate",
+      "Fixed the renewal automation and added failure alerting",
+      "Added certificate expiry monitoring with 30/14/7-day warnings"
+    ],
+    "severity": "CRITICAL",
+    "tags": ["infrastructure", "tls", "certificate", "outage", "api-gateway"]
+  }
+]

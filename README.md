@@ -221,13 +221,13 @@ Use these as slide-by-slide speaker notes / bullet starting points.
 ### Reflection Questions
 
 **1. What technical achievement are you most proud of?**
-Response: _fill in personally._
+I am most proud of building the Wilston AI-Powered Log Analysis Assistant. I worked on the complete pipeline, from log ingestion and error detection to cross-source correlation, RAG-based historical incident retrieval, and local LLM-based root-cause analysis. I also integrated Ollama and ChromaDB and developed a Streamlit interface for interactive log analysis.
 
 **2. What technical skill are you currently improving?**
-Response: _fill in personally._
+I am currently improving my Generative AI and LLM skills, especially RAG pipelines, prompt engineering, vector databases, and building reliable AI applications. I am also improving my Python skills and learning how to design production-ready AI systems.
 
 **3. What kind of engineering work excites you the most?**
-Response: _fill in personally._
+ReI am most excited about solving real-world engineering problems using AI and machine learning. I particularly enjoy working on systems where data, automation, and AI can improve efficiency, detect problems early, and support better decision-making.
 
 **4. What projects or technical areas would you like to work on over the next three years?**
-Response: _fill in personally._
+Over the next three years, I would like to work on advanced AI/ML and Generative AI projects, especially RAG systems, LLM applications, Agentic AI, predictive maintenance, computer vision, and intelligent automation. My goal is to build scalable, production-ready AI solutions that solve practical business and engineering problems.
